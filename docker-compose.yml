@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: horseg-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:5173
+      - API_SECRET_KEY=${API_SECRET_KEY:-change_me_in_production}
+      - PMU_USERNAME=${PMU_USERNAME:-}
+      - PMU_PASSWORD=${PMU_PASSWORD:-}
+      - MAX_BET_AMOUNT=${MAX_BET_AMOUNT:-50}
+      - DAILY_LIMIT=${DAILY_LIMIT:-200}
+    volumes:
+      - horseg-data:/app/data
+    ports:
+      - "3001:3001"
+    shm_size: '2gb'  # pour Chromium/Playwright
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: horseg-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  horseg-data:
