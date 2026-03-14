@@ -1,5 +1,5 @@
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../../.env') });
+require('dotenv').config({ path: path.join(__dirname, '../../.env'), override: true });
 
 module.exports = {
   port: parseInt(process.env.PORT, 10) || 5001,
