@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -30,6 +31,10 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/races', require('./routes/races'));
 app.use('/api/bets', require('./routes/bets'));
 app.use('/api/oracles', require('./routes/oracles'));
+
+// Servir le frontend (build statique)
+const frontendBuild = path.join(__dirname, '../../frontend/build');
+app.use(express.static(frontendBuild));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -66,6 +71,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     logger.info('Client WebSocket déconnecté');
   });
+});
+
+// SPA fallback — toutes les routes non-API renvoient index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendBuild, 'index.html'));
 });
 
 // Démarrage
