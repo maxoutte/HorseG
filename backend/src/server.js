@@ -8,6 +8,7 @@ const config = require('./config');
 const logger = require('./utils/logger');
 const oracleManager = require('./services/oracleManager');
 const pmuOracle = require('./services/pmuOracle');
+const turfooOracle = require('./services/turfooOracle');
 const { BetEngine } = require('./services/betEngine');
 
 const app = express();
@@ -74,6 +75,10 @@ server.listen(config.port, () => {
   // Lancer l'oracle PMU automatique (scan toutes les 30 min)
   pmuOracle.start(30);
   logger.info('Oracle PMU pronostics démarré (scan toutes les 30 min)');
+
+  // Lancer l'oracle Turfoo (scan toutes les 60 min)
+  turfooOracle.start(60);
+  logger.info('Oracle Turfoo pronostics démarré (scan toutes les 60 min)');
 });
 
 module.exports = { app, server, io };
