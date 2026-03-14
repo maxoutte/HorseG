@@ -1,29 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { getProgramme } from '../services/api';
+import { getProgramme, getBookmakers } from '../services/api';
 
 export default function RacesPage() {
   const [programme, setProgramme] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [bookmakers, setBookmakers] = useState([]);
+  const [selectedBookmaker, setSelectedBookmaker] = useState('pmu');
+
+  useEffect(() => {
+    getBookmakers()
+      .then(({ data }) => {
+        setBookmakers(data.bookmakers || []);
+        setSelectedBookmaker(data.default || 'pmu');
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setLoading(true);
-    getProgramme()
+    setError(null);
+    getProgramme(null, selectedBookmaker)
       .then(({ data }) => setProgramme(data))
       .catch((err) => setError(err.response?.data?.error || 'Erreur de chargement'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [selectedBookmaker]);
+
+  const currentBookmaker = bookmakers.find(b => b.id === selectedBookmaker);
 
   return (
     <div>
-      <div className="page-header">
-        <h2>Courses du jour</h2>
-        <p>Programme PMU en temps réel</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h2>Courses du jour</h2>
+          <p>Programme {currentBookmaker?.name || 'PMU'} en temps réel</p>
+        </div>
+
+        {bookmakers.length > 0 && (
+          <div style={{ display: 'flex', gap: 8 }}>
+            {bookmakers.map((bm) => (
+              <button
+                key={bm.id}
+                className={selectedBookmaker === bm.id ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setSelectedBookmaker(bm.id)}
+                title={bm.description}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: 14,
+                  fontWeight: selectedBookmaker === bm.id ? 700 : 400,
+                  opacity: selectedBookmaker === bm.id ? 1 : 0.7,
+                }}
+              >
+                {bm.name}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {loading && (
         <div className="card empty-state">
-          <p className="pulse">Chargement du programme...</p>
+          <p className="pulse">Chargement du programme {currentBookmaker?.name || ''}...</p>
         </div>
       )}
 
@@ -31,7 +68,7 @@ export default function RacesPage() {
         <div className="card">
           <p style={{ color: 'var(--warning)' }}>{error}</p>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 8 }}>
-            L'API PMU peut être indisponible. Vérifiez votre connexion.
+            L'API {currentBookmaker?.name || 'du bookmaker'} peut être indisponible. Vérifiez votre connexion.
           </p>
         </div>
       )}
@@ -47,7 +84,9 @@ export default function RacesPage() {
                     {reunion.disciplinesMere || reunion.audience}
                   </span>
                 </div>
-                <span className="badge badge-info">{reunion.pays?.code || 'FR'}</span>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span className="badge badge-info">{reunion.pays?.code || 'FR'}</span>
+                </div>
               </div>
 
               <table className="table">
@@ -79,7 +118,7 @@ export default function RacesPage() {
 
       {programme && !programme.programme && (
         <div className="card empty-state">
-          <p>Aucune course disponible pour aujourd'hui</p>
+          <p>Aucune course disponible pour aujourd'hui sur {currentBookmaker?.name || 'ce bookmaker'}</p>
         </div>
       )}
     </div>

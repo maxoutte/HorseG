@@ -13,6 +13,16 @@ module.exports = {
     username: process.env.PMU_USERNAME || '',
     password: process.env.PMU_PASSWORD || '',
   },
+  zeturf: {
+    baseUrl: process.env.ZETURF_BASE_URL || 'https://www.zeturf.fr/api/v1',
+    username: process.env.ZETURF_USERNAME || '',
+    password: process.env.ZETURF_PASSWORD || '',
+  },
+  genybet: {
+    baseUrl: process.env.GENYBET_BASE_URL || 'https://www.genybet.fr/api/v1',
+    username: process.env.GENYBET_USERNAME || '',
+    password: process.env.GENYBET_PASSWORD || '',
+  },
   betting: {
     maxBetAmount: parseFloat(process.env.MAX_BET_AMOUNT) || 50,
     defaultBetAmount: parseFloat(process.env.DEFAULT_BET_AMOUNT) || 2,

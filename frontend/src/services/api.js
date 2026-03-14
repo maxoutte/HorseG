@@ -31,19 +31,22 @@ api.interceptors.response.use(
 export const login = (username, password) =>
   api.post('/auth/login', { username, password });
 
-// Races
-export const getProgramme = (date) =>
-  api.get(`/races/programme${date ? `/${date}` : ''}`);
-export const getReunion = (date, reunion) =>
-  api.get(`/races/reunion/${date}/${reunion}`);
-export const getCourse = (date, reunion, course) =>
-  api.get(`/races/course/${date}/${reunion}/${course}`);
-export const getParticipants = (date, reunion, course) =>
-  api.get(`/races/participants/${date}/${reunion}/${course}`);
-export const getCotes = (date, reunion, course) =>
-  api.get(`/races/cotes/${date}/${reunion}/${course}`);
-export const getResultats = (date, reunion, course) =>
-  api.get(`/races/resultats/${date}/${reunion}/${course}`);
+// Bookmakers
+export const getBookmakers = () => api.get('/races/bookmakers');
+
+// Races (avec sélection du bookmaker via query param)
+export const getProgramme = (date, bookmaker) =>
+  api.get(`/races/programme${date ? `/${date}` : ''}`, { params: bookmaker ? { bookmaker } : {} });
+export const getReunion = (date, reunion, bookmaker) =>
+  api.get(`/races/reunion/${date}/${reunion}`, { params: bookmaker ? { bookmaker } : {} });
+export const getCourse = (date, reunion, course, bookmaker) =>
+  api.get(`/races/course/${date}/${reunion}/${course}`, { params: bookmaker ? { bookmaker } : {} });
+export const getParticipants = (date, reunion, course, bookmaker) =>
+  api.get(`/races/participants/${date}/${reunion}/${course}`, { params: bookmaker ? { bookmaker } : {} });
+export const getCotes = (date, reunion, course, bookmaker) =>
+  api.get(`/races/cotes/${date}/${reunion}/${course}`, { params: bookmaker ? { bookmaker } : {} });
+export const getResultats = (date, reunion, course, bookmaker) =>
+  api.get(`/races/resultats/${date}/${reunion}/${course}`, { params: bookmaker ? { bookmaker } : {} });
 
 // Bets
 export const getBetStats = () => api.get('/bets/stats');
