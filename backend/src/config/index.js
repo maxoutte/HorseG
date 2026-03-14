@@ -2,7 +2,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env'), override: true });
 
 module.exports = {
-  port: parseInt(process.env.PORT, 10) || 5001,
+  port: parseInt(process.env.PORT, 10) || 5050,
   nodeEnv: process.env.NODE_ENV || 'development',
   jwt: {
     secret: process.env.JWT_SECRET || 'dev-secret',
