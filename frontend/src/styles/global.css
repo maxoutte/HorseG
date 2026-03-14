@@ -73,6 +73,17 @@ button:disabled {
   color: white;
 }
 
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
 .btn-outline {
   background: transparent;
   border: 1px solid var(--border);

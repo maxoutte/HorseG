@@ -129,7 +129,7 @@ Header: X-Oracle-Key: votre-clé
           <p style={{ color: 'var(--danger)', fontWeight: 600 }}>Erreur de chargement</p>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{error}</p>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-            Vérifiez que le backend tourne sur <code>http://localhost:5001</code>
+            Vérifiez que le backend est bien lancé
           </p>
         </div>
       )}
