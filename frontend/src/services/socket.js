@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
 
-const SOCKET_URL = process.env.REACT_APP_WS_URL || 'http://localhost:5001';
+// Se connecter au même host que la page (fonctionne quel que soit le port)
+const SOCKET_URL = process.env.REACT_APP_WS_URL || window.location.origin;
 
 let socket = null;
 
