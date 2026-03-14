@@ -1,5 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
 const logger = require('../utils/logger');
+
+const PERSIST_FILE = path.join(__dirname, '../../data/oracles.json');
 
 /**
  * OracleManager gère les sources de signaux (oracles) qui déclenchent les paris.
@@ -34,12 +38,22 @@ class OracleManager {
       allowedBetTypes: null, // null = tous
       maxAmount: null,       // null = utilise config
     };
+    this._load();
   }
 
   /**
-   * Enregistre un nouvel oracle
+   * Enregistre un nouvel oracle.
+   * Si un oracle avec le même nom existe déjà (restauré depuis le fichier),
+   * retourne l'existant sans créer de doublon.
    */
   registerOracle(name, config = {}) {
+    // Réutiliser l'oracle existant si même nom
+    const existing = Array.from(this.oracles.values()).find(o => o.name === name);
+    if (existing) {
+      logger.info('Oracle existant réutilisé', { oracleId: existing.id, name });
+      return existing;
+    }
+
     const oracle = {
       id: uuidv4(),
       name,
@@ -55,6 +69,7 @@ class OracleManager {
     };
     this.oracles.set(oracle.id, oracle);
     logger.info('Oracle enregistré', { oracleId: oracle.id, name });
+    this._save();
     return oracle;
   }
 
@@ -63,7 +78,10 @@ class OracleManager {
    */
   removeOracle(oracleId) {
     const removed = this.oracles.delete(oracleId);
-    if (removed) logger.info('Oracle supprimé', { oracleId });
+    if (removed) {
+      logger.info('Oracle supprimé', { oracleId });
+      this._save();
+    }
     return removed;
   }
 
@@ -75,6 +93,7 @@ class OracleManager {
     if (!oracle) return null;
     oracle.enabled = enabled;
     logger.info(`Oracle ${enabled ? 'activé' : 'désactivé'}`, { oracleId });
+    this._save();
     return oracle;
   }
 
@@ -116,6 +135,7 @@ class OracleManager {
     oracle.signalCount++;
     oracle.lastSignal = signal.receivedAt;
     this.signalHistory.push(signal);
+    this._save();
 
     // Notifier les handlers
     for (const handler of this.signalHandlers) {
@@ -143,6 +163,7 @@ class OracleManager {
   setFilters(filters) {
     Object.assign(this.filters, filters);
     logger.info('Filtres mis à jour', { filters: this.filters });
+    this._save();
   }
 
   getOracles() {
@@ -151,6 +172,41 @@ class OracleManager {
 
   getSignalHistory(limit = 50) {
     return this.signalHistory.slice(-limit);
+  }
+
+  /**
+   * Sauvegarde les oracles et filtres dans le fichier JSON
+   */
+  _save() {
+    try {
+      const data = {
+        filters: this.filters,
+        oracles: Array.from(this.oracles.values()),
+      };
+      fs.mkdirSync(path.dirname(PERSIST_FILE), { recursive: true });
+      fs.writeFileSync(PERSIST_FILE, JSON.stringify(data, null, 2), 'utf8');
+    } catch (err) {
+      logger.error('Impossible de sauvegarder les oracles', { error: err.message });
+    }
+  }
+
+  /**
+   * Charge les oracles depuis le fichier JSON au démarrage
+   */
+  _load() {
+    try {
+      if (!fs.existsSync(PERSIST_FILE)) return;
+      const data = JSON.parse(fs.readFileSync(PERSIST_FILE, 'utf8'));
+      if (data.filters) Object.assign(this.filters, data.filters);
+      if (Array.isArray(data.oracles)) {
+        for (const oracle of data.oracles) {
+          this.oracles.set(oracle.id, oracle);
+        }
+        logger.info(`${data.oracles.length} oracle(s) restauré(s) depuis le disque`);
+      }
+    } catch (err) {
+      logger.error('Impossible de charger les oracles', { error: err.message });
+    }
   }
 
   _validateSignal(signal, oracle) {
