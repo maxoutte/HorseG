@@ -6,9 +6,15 @@ export default function OraclesPage() {
   const [newName, setNewName] = useState('');
   const [autoExec, setAutoExec] = useState(false);
   const [confidence, setConfidence] = useState(0.6);
+  const [error, setError] = useState(null);
 
   const loadOracles = () => {
-    getOracles().then(({ data }) => setOracles(data)).catch(() => {});
+    setError(null);
+    getOracles()
+      .then(({ data }) => setOracles(data))
+      .catch((err) => {
+        setError(err.response?.data?.error || err.message || 'Erreur de connexion au backend');
+      });
   };
 
   useEffect(() => { loadOracles(); }, []);
@@ -117,6 +123,16 @@ Header: X-Oracle-Key: votre-clé
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="card" style={{ marginTop: 20, borderLeft: '3px solid var(--danger)' }}>
+          <p style={{ color: 'var(--danger)', fontWeight: 600 }}>Erreur de chargement</p>
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>{error}</p>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+            Vérifiez que le backend tourne sur <code>http://localhost:5001</code>
+          </p>
+        </div>
+      )}
 
       <div className="card" style={{ marginTop: 20 }}>
         <h3 style={{ marginBottom: 16 }}>Oracles enregistrés</h3>
