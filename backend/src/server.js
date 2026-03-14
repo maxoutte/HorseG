@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const config = require('./config');
 const logger = require('./utils/logger');
 const oracleManager = require('./services/oracleManager');
+const pmuOracle = require('./services/pmuOracle');
 const { BetEngine } = require('./services/betEngine');
 
 const app = express();
@@ -69,6 +70,10 @@ io.on('connection', (socket) => {
 // Démarrage
 server.listen(config.port, () => {
   logger.info(`HorseG Backend démarré sur le port ${config.port}`);
+
+  // Lancer l'oracle PMU automatique (scan toutes les 30 min)
+  pmuOracle.start(30);
+  logger.info('Oracle PMU pronostics démarré (scan toutes les 30 min)');
 });
 
 module.exports = { app, server, io };

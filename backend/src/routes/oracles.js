@@ -43,6 +43,34 @@ router.put('/filters', authenticateToken, (req, res) => {
   res.json({ filters: oracleManager.filters });
 });
 
+// --- Contrôle de l'oracle PMU automatique ---
+
+// POST /api/oracles/pmu-oracle/start
+router.post('/pmu-oracle/start', authenticateToken, (req, res) => {
+  const pmuOracle = require('../services/pmuOracle');
+  const interval = parseInt(req.body.intervalMinutes, 10) || 30;
+  const oracle = pmuOracle.start(interval);
+  res.json({ status: 'started', oracle, intervalMinutes: interval });
+});
+
+// POST /api/oracles/pmu-oracle/stop
+router.post('/pmu-oracle/stop', authenticateToken, (req, res) => {
+  const pmuOracle = require('../services/pmuOracle');
+  pmuOracle.stop();
+  res.json({ status: 'stopped' });
+});
+
+// POST /api/oracles/pmu-oracle/scan - forcer un scan immédiat
+router.post('/pmu-oracle/scan', authenticateToken, async (req, res) => {
+  const pmuOracle = require('../services/pmuOracle');
+  try {
+    await pmuOracle._scan();
+    res.json({ status: 'scan_complete' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // --- Route signal (API Key oracle) ---
 
 // POST /api/oracles/:id/signal - recevoir un signal d'un oracle
